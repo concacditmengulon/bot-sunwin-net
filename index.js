@@ -43,13 +43,14 @@ async function getAndSendData() {
     const phien = data.phien;
     const xucXac = data.xuc_xac || 'N/A';
     const tong = data.tong || 'N/A';
+    const ket_qua = data.ket_qua || 'N/A';
     const duDoan = data.du_doan || 'N/A';
     const phienSau = data.phien_sau || 'N/A';
 
     if (phien !== lastPhien) {
       const message =
         `PHIÊN : ${phien} | ${xucXac}\n` +
-        `TỔNG: ${tong} - Kết quả: ${duDoan}\n` +
+        `TỔNG: ${tong} - Kết quả: ${ket_qua}\n` +
         `PHIÊN SAU : ${phienSau} | ${duDoan}\n` +
         `BOT BÁO KẾT QUẢ RẮN TỚI ĐÂY`;
 
