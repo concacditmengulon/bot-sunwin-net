@@ -74,7 +74,7 @@ setInterval(async () => {
   } catch (err) {
     console.error("Ping thất bại:", err.message);
   }
-}, 5 * 60 * 1000); // 5 phút ping 1 lần
+}, 25 * 60 * 1000); // 5 phút ping 1 lần
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
