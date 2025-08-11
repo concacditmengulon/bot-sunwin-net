@@ -65,11 +65,12 @@ async function getAndSendData() {
 // --- CHẠY LIÊN TỤC ---
 setInterval(getAndSendData, 10000);
 
-// --- AUTO-PING CHÍNH MÌNH ---
+// --- AUTO-PING CHÍNH MÌNH + CHẠY LẠI ---
 setInterval(async () => {
   try {
     await axios.get(SELF_URL);
-    console.log("Ping thành công để giữ app online.");
+    console.log("Ping thành công để giữ app online. Gọi lại getAndSendData...");
+    getAndSendData(); // chạy lại ngay sau khi ping
   } catch (err) {
     console.error("Ping thất bại:", err.message);
   }
@@ -79,4 +80,5 @@ setInterval(async () => {
 bot.onText(/\/start/, async (msg) => {
   await bot.sendMessage(msg.chat.id, "Bot đã khởi động và sẽ báo kết quả!");
   console.log(`Lệnh /start từ chat ID: ${msg.chat.id}`);
+  getAndSendData(); // chạy ngay khi /start
 });
