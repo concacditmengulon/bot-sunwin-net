@@ -1,4 +1,4 @@
-const TelegramBot = require('node-telegram-bot-api');
+Const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
@@ -7,7 +7,7 @@ const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002751793100';
 const API_URL = 'https://cstool001-sunwinpredict.onrender.com/api/taixiu/sunwin';
 const PORT = process.env.PORT || 3000;
-const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // đổi thành link Render thật
+const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // ĐỔI THÀNH LINK RENDER CỦA BẠN
 
 // --- TẠO WEB SERVER KEEP-ALIVE ---
 const app = express();
@@ -20,7 +20,7 @@ app.listen(PORT, () => {
 
 // --- KHỞI TẠO BOT ---
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-let lastPhien = null;
+let lastSentMessage = null;
 
 // --- GỬI TIN NHẮN ---
 async function sendMessage(message) {
@@ -47,34 +47,37 @@ async function getAndSendData() {
     const duDoan = data.du_doan || 'N/A';
     const phienSau = data.phien_sau || 'N/A';
 
-    if (phien !== lastPhien) {
-      const message =
+    const newMessage =
         `PHIÊN : ${phien} | ${xucXac}\n` +
         `TỔNG: ${tong} - Kết quả: ${ket_qua}\n` +
         `PHIÊN SAU : ${phienSau} | ${duDoan}\n` +
         `BOT BÁO KẾT QUẢ RẮN TỚI ĐÂY`;
 
-      await sendMessage(message);
-      lastPhien = phien;
+    // So sánh tin nhắn mới với tin nhắn cuối cùng đã gửi
+    if (newMessage !== lastSentMessage) {
+      await sendMessage(newMessage);
+      lastSentMessage = newMessage;
     }
+
   } catch (error) {
     console.error(`Có lỗi xảy ra:`, error.message);
   }
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 3500);
+// Lấy dữ liệu mỗi 2 giây để đảm bảo phản hồi nhanh nhất
+setInterval(getAndSendData, 2000); 
 
-// --- AUTO-PING CHÍNH MÌNH + CHẠY LẠI ---
+// --- TỰ ĐỘNG PING CHÍNH MÌNH ---
+// Ping mỗi 10 phút để giữ cho ứng dụng không bị ngủ
 setInterval(async () => {
   try {
     await axios.get(SELF_URL);
-    console.log("Ping thành công để giữ app online. Gọi lại getAndSendData...");
-    getAndSendData(); // chạy lại ngay sau khi ping
+    console.log("Ping thành công để giữ app online.");
   } catch (err) {
     console.error("Ping thất bại:", err.message);
   }
-}, 25 * 60 * 1000); // 5 phút ping 1 lần
+}, 10 * 60 * 1000); // 10 phút
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
