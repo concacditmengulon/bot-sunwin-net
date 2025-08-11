@@ -5,14 +5,13 @@ const http = require('http');
 
 // --- CẤU HÌNH ---
 const TELEGRAM_BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
-const CHAT_ID = '6781092017';
+const CHAT_ID = '-1002751793100';
 const API_URL = 'https://cstool001-sunwinpredict.onrender.com/api/taixiu/sunwin';
-const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // ⚠ Thay link Render của bạn
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
 let lastPhien = null;
 
-// 🎨 Tạo tin nhắn đẹp với MarkdownV2 (đã xoá giải thích)
+// 🎨 Tạo tin nhắn đẹp với MarkdownV2
 function createMessage(data) {
     const phien = data.phien || 'Đang cập nhật';
     const xuc_xac = data.xuc_xac || 'Đang cập nhật';
@@ -49,7 +48,7 @@ function createMessage(data) {
 // 📡 Lấy dữ liệu API và gửi khi có phiên mới
 async function fetchDataAndSendMessage() {
     try {
-        const { data } = await axios.get(API_URL);
+        const { data } = await axios.get(API_URL, { timeout: 10000 });
 
         if (data && data.phien && data.phien !== lastPhien) {
             console.log(`[BOT] Phát hiện phiên mới: ${data.phien}`);
@@ -60,7 +59,7 @@ async function fetchDataAndSendMessage() {
             console.log('[BOT] Không có phiên mới.');
         }
     } catch (error) {
-        console.error('[BOT] Lỗi:', error.message);
+        console.error(`[BOT] Lỗi API hoặc kết nối: ${error.message}`);
     }
 }
 
@@ -68,29 +67,22 @@ async function fetchDataAndSendMessage() {
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     try {
-        const { data } = await axios.get(API_URL);
+        const { data } = await axios.get(API_URL, { timeout: 10000 });
         const message = createMessage(data);
         await bot.sendMessage(chatId, message, { parse_mode: 'MarkdownV2' });
     } catch (error) {
-        bot.sendMessage(chatId, '❌ Có lỗi xảy ra, vui lòng thử lại sau.');
+        bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi lấy dữ liệu.');
     }
 });
 
 // 🔄 Lặp mỗi 15 giây
 setInterval(fetchDataAndSendMessage, 15000);
 
-// 🌐 HTTP server để Render giữ bot sống
+// 🌐 HTTP server để Render nhận ping từ bên ngoài (UptimeRobot)
 const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end('<h1>✅ Bot Sunwin VIP đang hoạt động 24/7</h1>');
+    res.end('<h1>✅ Bot Sunwin VIP đang hoạt động</h1>');
 });
 server.listen(process.env.PORT || 3000, () => {
     console.log(`✅ Server chạy tại cổng ${process.env.PORT || 3000}`);
 });
-
-// 🔄 Tự ping chính mình 5 phút/lần để Render Free không sleep
-setInterval(() => {
-    axios.get(SELF_URL)
-        .then(() => console.log('[PING] Gửi yêu cầu tự giữ bot sống'))
-        .catch(err => console.error('[PING] Lỗi ping:', err.message));
-}, 5 * 60 * 1000);
