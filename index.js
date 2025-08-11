@@ -45,15 +45,13 @@ async function getAndSendData() {
     const tong = data.tong || 'N/A';
     const duDoan = data.du_doan || 'N/A';
     const phienSau = data.phien_sau || 'N/A';
-    const giaiThich = data.giai_thich || 'Không có giải thích.';
 
     if (phien !== lastPhien) {
       const message =
-        `Phiên : ${phien} | ${xucXac}\n` +
-        `Tổng: ${tong} - Kết quả: ${duDoan}\n` +
-        `Phiên Sau : ${phienSau} | ${duDoan}\n` +
-        `Giải Thích : ${giaiThich}\n` +
-        `Bot Báo Kết Quả RẮN TỚI ĐÂY`;
+        `PHIÊN : ${phien} | ${xucXac}\n` +
+        `TỔNG: ${tong} - Kết quả: ${duDoan}\n` +
+        `PHIÊN SAU : ${phienSau} | ${duDoan}\n` +
+        `BOT BÁO KẾT QUẢ RẮN TỚI ĐÂY`;
 
       await sendMessage(message);
       lastPhien = phien;
