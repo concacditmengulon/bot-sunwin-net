@@ -1,13 +1,14 @@
 {
-  "name": "sunwin-telegram-bot",
+  "name": "telegram-bot-sunwin",
   "version": "1.0.0",
-  "description": "Bot Telegram báo kết quả Sunwin",
+  "description": "Bot Telegram Sunwin báo kết quả 24/7 trên Render",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^1.7.7",
-    "node-telegram-bot-api": "^0.66.0"
+    "axios": "^1.7.2",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.61.0"
   }
 }
