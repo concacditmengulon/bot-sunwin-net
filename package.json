@@ -1,15 +1,16 @@
 {
-  "name": "sunwin-bot",
+  "name": "sunwin-vip-bot",
   "version": "1.0.0",
-  "description": "A Telegram bot for Sunwin predictions.",
+  "description": "Bot Telegram Sunwin VIP chạy Render 24/7, tự ping giữ cho server không bị tắt",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^1.7.2",
+    "axios": "^1.6.8",
     "node-telegram-bot-api": "^0.66.0"
   },
-  "author": "Your Name",
-  "license": "ISC"
+  "engines": {
+    "node": ">=18"
+  }
 }
