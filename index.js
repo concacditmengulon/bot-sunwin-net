@@ -63,7 +63,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 10000);
+setInterval(getAndSendData, 3500);
 
 // --- AUTO-PING CHÍNH MÌNH + CHẠY LẠI ---
 setInterval(async () => {
