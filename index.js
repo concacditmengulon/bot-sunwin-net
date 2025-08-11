@@ -1,22 +1,19 @@
 // index.js
-
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const http = require('http'); // Cần để tạo web server và giữ Render không bị tắt
+const http = require('http');
 
-// --- CẤU HÌNH CỦA BẠN ---
-const TELEGRAM_BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM'; // Thay bằng token bot của bạn
-const CHAT_ID = '6781092017'; // Thay bằng ID của kênh/nhóm muốn bot gửi tin nhắn
+// --- CẤU HÌNH ---
+const TELEGRAM_BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
+const CHAT_ID = '6781092017';
 const API_URL = 'https://cstool001-sunwinpredict.onrender.com/api/taixiu/sunwin';
+const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // ⚠ Thay link Render của bạn
 
-// Khởi tạo bot với chế độ polling tắt, thích hợp cho việc chạy trên server
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: false });
+let lastPhien = null;
 
-let lastPhien = null; // Biến để theo dõi phiên cuối cùng đã gửi
-
-// --- HÀM TẠO NỘI DUNG TIN NHẮN ---
+// 🎨 Tạo tin nhắn đẹp với MarkdownV2 (đã xoá giải thích)
 function createMessage(data) {
-    // Lấy dữ liệu từ API và xử lý trường hợp không có dữ liệu
     const phien = data.phien || 'Đang cập nhật';
     const xuc_xac = data.xuc_xac || 'Đang cập nhật';
     const tong = data.tong || 'Đang cập nhật';
@@ -24,84 +21,76 @@ function createMessage(data) {
     const phien_sau = data.phien_sau || 'Đang cập nhật';
     const du_doan = data.du_doan || 'Đang cập nhật';
     const ty_le_thanh_cong = data.ty_le_thanh_cong || 'Đang cập nhật';
-    const giai_thich = data.giai_thich || 'Đang cập nhật';
     const diem_tai = data.diem_tai || 'Đang cập nhật';
     const diem_xiu = data.diem_xiu || 'Đang cập nhật';
     const muc_do_rui_ro = data.muc_do_rui_ro || 'Đang cập nhật';
 
-    // Định dạng chuỗi tin nhắn với Markdown để in đậm
-    const message = `
-✨ **SUNWIN VIP - DỰ ĐOÁN CHUẨN XÁC** ✨
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-🔹 **Phiên hiện tại**: ${phien}
-🎲 **Xúc xắc**: ${xuc_xac}
-🧮 **Tổng điểm**: ${tong}
-🏆 **Kết quả**: ${ket_qua}
-🎲 **Đánh Giá**: 
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-🔮 **Phiên**: ${phien_sau} | ${du_doan}
-📈 **Độ tin cậy**: ${ty_le_thanh_cong}
-🎯 **Khuyến nghị**: Đặt cược ${du_doan}
-💀 **Giải Thích**: ${giai_thich}
-🎉 **Cầu**:
-**Điểm Tài**: ${diem_tai}
-**Điểm Xỉu**: ${diem_xiu}
-**Mức độ rủi ro**: ${muc_do_rui_ro}
+    return `
+💎 *SUNWIN VIP - DỰ ĐOÁN CHUẨN XÁC* 💎
+────────────────────
+📌*Phiên*: \`${phien}\` | *${ket_qua}*
+🎲 *Xúc xắc*: ${xuc_xac}
+🧮 *Tổng điểm*: \`${tong}\`
+🏆 *Kết quả*: *${ket_qua}*
+────────────────────
+🔮 Phiên: \`${phien_sau}\`
+🎯 Khuyến nghị: *${du_doan}*
+📈 Độ tin cậy: *${ty_le_thanh_cong}*
+- 📊 Điểm Tài: \`${diem_tai}\`
+- 📊 Điểm Xỉu: \`${diem_xiu}\`
+⚠ Mức rủi ro: *${muc_do_rui_ro}*
 
-⏳ Cập nhật lúc: ${new Date().toLocaleString('vi-VN')}
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-💎 **Hệ thống Sunwin AI - Uy tín hàng đầu** 💎
-`;
-    return message;
+⏳ *Cập nhật*: _${new Date().toLocaleString('vi-VN')}_
+────────────────────
+🤖 *Hệ thống Sunwin AI - Uy tín hàng đầu*
+`.replace(/\./g, '\\.');
 }
 
-// --- HÀM LẤY DỮ LIỆU VÀ GỬI TIN NHẮN KHI CÓ PHIÊN MỚI ---
+// 📡 Lấy dữ liệu API và gửi khi có phiên mới
 async function fetchDataAndSendMessage() {
     try {
-        const response = await axios.get(API_URL);
-        const data = response.data;
+        const { data } = await axios.get(API_URL);
 
-        // Chỉ gửi tin nhắn nếu phiên hiện tại khác với phiên cuối cùng đã gửi
         if (data && data.phien && data.phien !== lastPhien) {
-            console.log(`Tìm thấy dữ liệu mới cho phiên ${data.phien}, đang gửi tin nhắn...`);
+            console.log(`[BOT] Phát hiện phiên mới: ${data.phien}`);
             const message = createMessage(data);
-            await bot.sendMessage(CHAT_ID, message, { parse_mode: 'Markdown' });
-            lastPhien = data.phien; // Cập nhật phiên cuối cùng
-            console.log('Gửi tin nhắn thành công.');
+            await bot.sendMessage(CHAT_ID, message, { parse_mode: 'MarkdownV2' });
+            lastPhien = data.phien;
         } else {
-            console.log('Không có dữ liệu mới. Đang chờ...');
+            console.log('[BOT] Không có phiên mới.');
         }
     } catch (error) {
-        console.error('Lỗi khi gọi API hoặc gửi tin nhắn:', error.message);
+        console.error('[BOT] Lỗi:', error.message);
     }
 }
 
-// --- XỬ LÝ LỆNH /start ---
+// 📩 /start → xem kết quả mới nhất
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     try {
-        const response = await axios.get(API_URL);
-        const data = response.data;
+        const { data } = await axios.get(API_URL);
         const message = createMessage(data);
-        await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-        console.log(`Phản hồi lệnh /start thành công cho chat ID: ${chatId}`);
+        await bot.sendMessage(chatId, message, { parse_mode: 'MarkdownV2' });
     } catch (error) {
-        console.error('Lỗi khi xử lý lệnh /start:', error.message);
-        bot.sendMessage(chatId, 'Có lỗi xảy ra, vui lòng thử lại sau.');
+        bot.sendMessage(chatId, '❌ Có lỗi xảy ra, vui lòng thử lại sau.');
     }
 });
 
-// --- LẬP LỊCH TỰ ĐỘNG CẬP NHẬT MỖI 15 GIÂY ---
+// 🔄 Lặp mỗi 15 giây
 setInterval(fetchDataAndSendMessage, 15000);
 
-// --- TẠO MỘT SERVER NHỎ ĐỂ RENDER BIẾT ỨNG DỤNG ĐANG CHẠY ---
+// 🌐 HTTP server để Render giữ bot sống
 const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Bot is running and listening for new data!\n');
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end('<h1>✅ Bot Sunwin VIP đang hoạt động 24/7</h1>');
+});
+server.listen(process.env.PORT || 3000, () => {
+    console.log(`✅ Server chạy tại cổng ${process.env.PORT || 3000}`);
 });
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-    console.log(`Server đang lắng nghe tại cổng ${port}`);
-});
-
+// 🔄 Tự ping chính mình 5 phút/lần để Render Free không sleep
+setInterval(() => {
+    axios.get(SELF_URL)
+        .then(() => console.log('[PING] Gửi yêu cầu tự giữ bot sống'))
+        .catch(err => console.error('[PING] Lỗi ping:', err.message));
+}, 5 * 60 * 1000);
