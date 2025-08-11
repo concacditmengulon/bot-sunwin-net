@@ -1,15 +1,28 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const express = require('express');
 
-// Token bot và Chat ID
+// --- CẤU HÌNH ---
 const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002751793100';
 const API_URL = 'https://cstool001-sunwinpredict.onrender.com/api/taixiu/sunwin';
+const PORT = process.env.PORT || 3000;
+const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // đổi thành link Render thật
 
-// Khởi tạo bot
+// --- TẠO WEB SERVER KEEP-ALIVE ---
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Bot Telegram đang chạy 24/7!');
+});
+app.listen(PORT, () => {
+  console.log(`Server keep-alive chạy trên cổng ${PORT}`);
+});
+
+// --- KHỞI TẠO BOT ---
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+let lastPhien = null;
 
-// Hàm gửi tin nhắn
+// --- GỬI TIN NHẮN ---
 async function sendMessage(message) {
   try {
     await bot.sendMessage(CHAT_ID, message);
@@ -19,51 +32,52 @@ async function sendMessage(message) {
   }
 }
 
-// Hàm lấy và xử lý dữ liệu từ API
+// --- LẤY VÀ GỬI DỮ LIỆU ---
 async function getAndSendData() {
-  let lastPhien = null;
+  try {
+    const response = await axios.get(API_URL, { timeout: 5000 });
+    const data = response.data;
 
-  while (true) {
-    try {
-      const response = await axios.get(API_URL);
-      const data = response.data;
+    if (!data || !data.phien) return;
 
-      const phien = data.phien;
-      const xucXac = data.xuc_xac;
-      const tong = data.tong;
-      const ketQua = data.ket_qua;
+    const phien = data.phien;
+    const xucXac = data.xuc_xac || 'N/A';
+    const tong = data.tong || 'N/A';
+    const duDoan = data.du_doan || 'N/A';
+    const phienSau = data.phien_sau || 'N/A';
+    const giaiThich = data.giai_thich || 'Không có giải thích.';
 
-      // Kiểm tra phiên mới
-      if (phien && phien !== lastPhien) {
-        const message =
-          `Phiên ${phien} | ${xucXac}\n` +
-          `Tổng: ${tong} - Kết quả: ${ketQua}\n` +
-          `Bot Báo Kết Quả RẮN TỚI ĐÂY`;
+    if (phien !== lastPhien) {
+      const message =
+        `Phiên : ${phien} | ${xucXac}\n` +
+        `Tổng: ${tong} - Kết quả: ${duDoan}\n` +
+        `Phiên Sau : ${phienSau} | ${duDoan}\n` +
+        `Giải Thích : ${giaiThich}\n` +
+        `Bot Báo Kết Quả RẮN TỚI ĐÂY`;
 
-        await sendMessage(message);
-        lastPhien = phien;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Chờ 10 giây
-
-    } catch (error) {
-      console.error(`Có lỗi xảy ra:`, error.message);
-      await new Promise(resolve => setTimeout(resolve, 60000)); // Lỗi thì chờ 60 giây
+      await sendMessage(message);
+      lastPhien = phien;
     }
+  } catch (error) {
+    console.error(`Có lỗi xảy ra:`, error.message);
   }
 }
 
-// Lắng nghe /start
+// --- CHẠY LIÊN TỤC ---
+setInterval(getAndSendData, 10000);
+
+// --- AUTO-PING CHÍNH MÌNH ---
+setInterval(async () => {
+  try {
+    await axios.get(SELF_URL);
+    console.log("Ping thành công để giữ app online.");
+  } catch (err) {
+    console.error("Ping thất bại:", err.message);
+  }
+}, 5 * 60 * 1000); // 5 phút ping 1 lần
+
+// --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  await bot.sendMessage(chatId, "Chào mừng! Bot đã được khởi động và sẽ bắt đầu báo kết quả.");
-  console.log(`Lệnh /start từ chat ID: ${chatId}`);
+  await bot.sendMessage(msg.chat.id, "Bot đã khởi động và sẽ báo kết quả!");
+  console.log(`Lệnh /start từ chat ID: ${msg.chat.id}`);
 });
-
-// Khởi chạy bot
-async function main() {
-  console.log('Bot đã khởi động...');
-  getAndSendData();
-}
-
-main();
