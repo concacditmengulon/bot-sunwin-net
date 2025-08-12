@@ -1,4 +1,4 @@
-const TelegramBot = require('node-telegram-bot-api');
+Const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
@@ -20,11 +20,12 @@ app.listen(PORT, () => {
 
 // --- KHỞI TẠO BOT ---
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-let lastSentMessage = null;
 
-// --- BIẾN LƯU LỊCH SỬ THỐNG KÊ ---
+// --- BIẾN LƯU LỊCH SỬ VÀ TRẠNG THÁI ---
 let correctPredictions = 0;
 let incorrectPredictions = 0;
+let lastPhienSent = 0; // Thêm biến để lưu số phiên đã gửi cuối cùng
+let lastPhienData = {}; // Biến để lưu dữ liệu phiên cuối cùng
 
 // --- GỬI TIN NHẮN ---
 async function sendMessage(message, parseMode = 'HTML') {
@@ -42,7 +43,10 @@ async function getAndSendData() {
     const response = await axios.get(API_URL, { timeout: 5000 });
     const data = response.data;
 
-    if (!data || !data.phien) return;
+    // Kiểm tra nếu không có dữ liệu, không có số phiên, hoặc số phiên không thay đổi
+    if (!data || !data.phien || data.phien === lastPhienSent) {
+      return;
+    }
 
     const phien = data.phien;
     const xucXac = data.xuc_xac || 'N/A';
@@ -51,15 +55,12 @@ async function getAndSendData() {
     const duDoan = data.du_doan || 'N/A';
     const phienSau = data.phien_sau || 'N/A';
     const ketQuaPhienTruoc = data.ket_qua_phien_truoc || 'N/A';
-
-    // Cập nhật thống kê
-    // Lấy kết quả của phiên trước đó để so sánh với dự đoán của phiên đó
-    if (lastSentMessage) {
-        // Trích xuất dự đoán từ tin nhắn cuối cùng
-        const lastPredictionMatch = lastSentMessage.match(/PHIÊN SAU : (\d+) \| (Tài|Xỉu)/);
-        if (lastPredictionMatch && lastPredictionMatch[2] === ketQuaPhienTruoc) {
+    
+    // Cập nhật thống kê khi có phiên mới
+    if (lastPhienData.phien && lastPhienData.du_doan && ketQuaPhienTruoc !== 'N/A') {
+        if (lastPhienData.du_doan === ketQuaPhienTruoc) {
             correctPredictions++;
-        } else if (lastPredictionMatch) {
+        } else {
             incorrectPredictions++;
         }
     }
@@ -74,11 +75,14 @@ async function getAndSendData() {
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
-    // So sánh tin nhắn mới với tin nhắn cuối cùng đã gửi
-    if (newMessage !== lastSentMessage) {
-      await sendMessage(newMessage);
-      lastSentMessage = newMessage;
-    }
+    await sendMessage(newMessage);
+    
+    // Cập nhật biến trạng thái sau khi gửi tin nhắn thành công
+    lastPhienSent = phien;
+    lastPhienData = {
+        phien: phien,
+        du_doan: duDoan
+    };
 
   } catch (error) {
     console.error(`Có lỗi xảy ra:`, error.message);
@@ -86,11 +90,9 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-// Lấy dữ liệu mỗi 2 giây để đảm bảo phản hồi nhanh nhất
 setInterval(getAndSendData, 2000); 
 
 // --- TỰ ĐỘNG PING CHÍNH MÌNH ---
-// Ping mỗi 10 phút để giữ cho ứng dụng không bị ngủ
 setInterval(async () => {
   try {
     await axios.get(SELF_URL);
@@ -98,7 +100,7 @@ setInterval(async () => {
   } catch (err) {
     console.error("Ping thất bại:", err.message);
   }
-}, 10 * 60 * 1000); // 10 phút
+}, 10 * 60 * 1000);
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
