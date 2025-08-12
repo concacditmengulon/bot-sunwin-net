@@ -72,7 +72,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC (0.5 giây) ---
-setInterval(getAndSendData, 500); 
+setInterval(getAndSendData, 100); 
 
 // --- TỰ ĐỘNG PING CHÍNH MÌNH (10 phút) ---
 setInterval(async () => {
@@ -82,7 +82,7 @@ setInterval(async () => {
   } catch (err) {
     console.error("Ping thất bại:", err.message);
   }
-}, 10 * 60 * 1000);
+}, 15 * 60 * 1000);
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
