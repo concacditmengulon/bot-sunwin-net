@@ -1,4 +1,4 @@
-Const TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
