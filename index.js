@@ -40,27 +40,31 @@ async function getAndSendData() {
     const response = await axios.get(API_URL, { timeout: 5000 });
     const data = response.data;
 
-    // Kiểm tra nếu không có dữ liệu, không có số phiên, hoặc số phiên không thay đổi
-    if (!data || !data.phien || data.phien === lastPhienSent) {
+    // Kiểm tra nếu không có dữ liệu hoặc số phiên không hợp lệ
+    if (!data || !data.phien) {
+      console.log('Không nhận được dữ liệu hợp lệ từ API.');
       return;
     }
 
-    const phien = data.phien;
-    const xucXac = data.xuc_xac || 'N/A';
-    const tong = data.tong || 'N/A';
-    const ket_qua = data.ket_qua || 'N/A';
-    
-    // Cập nhật biến trạng thái trước khi gửi tin nhắn
-    lastPhienSent = phien;
+    // Chỉ gửi tin nhắn nếu số phiên mới nhận được LỚN HƠN số phiên đã gửi
+    if (data.phien > lastPhienSent) {
+      const phien = data.phien;
+      const xucXac = data.xuc_xac || 'N/A';
+      const tong = data.tong || 'N/A';
+      const ket_qua = data.ket_qua || 'N/A';
+      
+      // Cập nhật biến trạng thái ngay lập tức
+      lastPhienSent = phien;
 
-    // Tạo tin nhắn mới theo định dạng yêu cầu
-    const newMessage =
-      `<b>PHIÊN : ${phien} | ${xucXac}</b>\n` +
-      `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
-      `━━━━━━━━━━━━━━━━\n` +
-      `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
+      // Tạo tin nhắn mới theo định dạng yêu cầu
+      const newMessage =
+        `<b>PHIÊN : ${phien} | ${xucXac}</b>\n` +
+        `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
+        `━━━━━━━━━━━━━━━━\n` +
+        `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
-    await sendMessage(newMessage);
+      await sendMessage(newMessage);
+    }
 
   } catch (error) {
     console.error(`Có lỗi xảy ra:`, error.message);
