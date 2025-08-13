@@ -75,8 +75,8 @@ async function getAndSendData() {
   }
 }
 
-// --- CHẠY LIÊN TỤC (0.5 giây) ---
-setInterval(getAndSendData, 500);
+// --- CHẠY LIÊN TỤC (0 giây) ---
+setInterval(getAndSendData, 1);
 
 // --- TỰ ĐỘNG PING CHÍNH MÌNH (10 phút) ---
 setInterval(async () => {
