@@ -51,6 +51,7 @@ async function getAndSendData() {
       const phien = data.phien || 'N/A';
       const xucXac = data.xuc_xac || 'N/A';
       const tong = data.tong || 'N/A';
+      const ketQua = data.ket_qua || 'N/A';
       const duDoan = data.du_doan || 'N/A';
       const phienSau = data.phien_sau || 'N/A';
       const tyLeThanhCong = data.ty_le_thanh_cong || 'N/A';
@@ -58,7 +59,7 @@ async function getAndSendData() {
 
       const newMessage =
         `<b>PHIÊN : ${phien} | ${xucXac}</b>\n` +
-        `<b>TỔNG: ${tong} - Kết quả: ${duDoan}</b>\n` +
+        `<b>TỔNG: ${tong} - Kết quả: ${ketQua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>PHIÊN : ${phienSau} | ${duDoan}</b>\n` +
         `<b>TIN CẬY : ${tyLeThanhCong}</b>\n` +
