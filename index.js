@@ -5,9 +5,9 @@ const express = require('express');
 // --- CẤU HÌNH ---
 const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002751793100';
-const API_URL = 'https://cstool001-sunwinpredict.onrender.com/api/taixiu/sunwin';
+const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/history';
 const PORT = process.env.PORT || 3000;
-const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // Thay đổi nếu tên app của bạn khác
+const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // Đổi nếu khác
 
 // --- TẠO WEB SERVER KEEP-ALIVE ---
 const app = express();
@@ -40,31 +40,26 @@ async function getAndSendData() {
     const response = await axios.get(API_URL, { timeout: 5000 });
     const data = response.data;
 
-    if (!data || !data.phien || !data.phien_sau) {
+    if (!data || !Array.isArray(data) || data.length === 0) {
       console.log('Không nhận được dữ liệu hợp lệ từ API.');
       return;
     }
 
-    if (data.phien > lastPhienSent) {
-      lastPhienSent = data.phien;
+    const latest = data[0]; // Lấy phiên mới nhất
 
-      const phien = data.phien || 'N/A';
-      const xucXac = data.xuc_xac || 'N/A';
-      const tong = data.tong || 'N/A';
-      const ketQua = data.ket_qua || 'N/A';
-      const duDoan = data.du_doan || 'N/A';
-      const phienSau = data.phien_sau || 'N/A';
-      const tyLeThanhCong = data.ty_le_thanh_cong || 'N/A';
-      const mucDoRuiRo = data.muc_do_rui_ro || 'N/A';
+    if (latest.Phien > lastPhienSent) {
+      lastPhienSent = latest.Phien;
+
+      const phien = latest.Phien || 'N/A';
+      const xuc1 = latest.Xuc_xac_1 || 'N/A';
+      const xuc2 = latest.Xuc_xac_2 || 'N/A';
+      const xuc3 = latest.Xuc_xac_3 || 'N/A';
+      const tong = latest.Tong || 'N/A';
+      const ketQua = latest.Ket_qua || 'N/A';
 
       const newMessage =
-        `<b>PHIÊN : ${phien} | ${xucXac}</b>\n` +
+        `<b>PHIÊN : ${phien} | ${xuc1} - ${xuc2} - ${xuc3}</b>\n` +
         `<b>TỔNG: ${tong} - Kết quả: ${ketQua}</b>\n` +
-        `━━━━━━━━━━━━━━━━\n` +
-        `<b>PHIÊN : ${phienSau} | ${duDoan}</b>\n` +
-        `<b>TIN CẬY : ${tyLeThanhCong}</b>\n` +
-        `<b>KHUYẾN NGHỊ ĐẶT : ${duDoan}</b>\n` +
-        `<b>RỦI RO : ${mucDoRuiRo}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
@@ -76,10 +71,10 @@ async function getAndSendData() {
   }
 }
 
-// --- CHẠY LIÊN TỤC (0 giây) ---
-setInterval(getAndSendData, 5);
+// --- CHẠY LIÊN TỤC ---
+setInterval(getAndSendData, 0);
 
-// --- TỰ ĐỘNG PING CHÍNH MÌNH (10 phút) ---
+// --- TỰ ĐỘNG PING CHÍNH MÌNH ---
 setInterval(async () => {
   try {
     await axios.get(SELF_URL);
