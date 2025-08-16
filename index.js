@@ -107,7 +107,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 50); // Tăng thời gian check lên 2 giây
+setInterval(getAndSendData, 2000); // Tăng thời gian check lên 2 giây
 
 // --- TỰ ĐỘNG PING CHÍNH MÌNH ---
 setInterval(async () => {
