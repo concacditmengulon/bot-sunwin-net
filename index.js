@@ -7,7 +7,7 @@ const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002751793100';
 const API_URL = 'https://admin-vannhat-sunpredict-gq2y.onrender.com/api/du-doan';
 const PORT = process.env.PORT || 3000;
-const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // Đổi nếu khác
+const SELF_URL = 'https://admin-vannhat-sunpredict-3kxb.onrender.com/api/du-doan'; // Đổi nếu khác
 
 // --- TẠO WEB SERVER KEEP-ALIVE ---
 const app = express();
