@@ -5,7 +5,7 @@ const express = require('express');
 // --- CẤU HÌNH ---
 const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002751793100';
-const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/history';
+const API_URL = 'https://admin-vannhat-sunpredict-gq2y.onrender.com/api/du-doan';
 const PORT = process.env.PORT || 3000;
 const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // Đổi nếu khác
 
@@ -34,32 +34,67 @@ async function sendMessage(message) {
   }
 }
 
+// --- TÍNH TOÁN VỐN CƯỢC KELLY ---
+// Hàm giả lập tính toán gợi ý cược theo công thức Kelly
+function getKellyBet(confidence) {
+  // Công thức Kelly: f* = (bp - q) / b
+  // b = tỉ lệ cược (1)
+  // p = xác suất thắng (confidence)
+  // q = xác suất thua (1-p)
+  // f* = tỉ lệ vốn nên cược
+  // Để đơn giản, ta sẽ dùng công thức tuyến tính từ 50k đến 500k
+  // Dựa vào độ tin cậy từ 65% trở lên
+  const minConfidence = 65; // Độ tin cậy tối thiểu để cược
+  const maxBet = 500; // Cược tối đa 500k
+  const minBet = 50; // Cược tối thiểu 50k
+
+  const confValue = parseFloat(confidence);
+
+  if (isNaN(confValue) || confValue < minConfidence) {
+    return 0; // Không nên cược
+  }
+
+  // Chuyển độ tin cậy từ % về số thực (ví dụ 70 -> 0.70)
+  const confDecimal = confValue / 100;
+
+  // Tính toán tỷ lệ cược dựa trên độ tin cậy
+  // confDecimal = 0.65 -> 0
+  // confDecimal = 0.90 -> 1
+  const scale = (confDecimal - (minConfidence / 100)) / (1 - (minConfidence / 100));
+
+  let betAmount = minBet + (maxBet - minBet) * scale;
+  
+  // Làm tròn về 10k gần nhất
+  return Math.round(betAmount / 10) * 10;
+}
+
+
 // --- LẤY VÀ GỬI DỮ LIỆU ---
 async function getAndSendData() {
   try {
     const response = await axios.get(API_URL, { timeout: 5000 });
     const data = response.data;
 
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    if (!data || data.phien === undefined) {
       console.log('Không nhận được dữ liệu hợp lệ từ API.');
       return;
     }
 
-    const latest = data[0]; // Lấy phiên mới nhất
+    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, do_tin_cay } = data;
 
-    if (latest.Phien > lastPhienSent) {
-      lastPhienSent = latest.Phien;
+    if (phien > lastPhienSent) {
+      lastPhienSent = phien;
 
-      const phien = latest.Phien || 'N/A';
-      const xuc1 = latest.Xuc_xac_1 || 'N/A';
-      const xuc2 = latest.Xuc_xac_2 || 'N/A';
-      const xuc3 = latest.Xuc_xac_3 || 'N/A';
-      const tong = latest.Tong || 'N/A';
-      const ketQua = latest.Ket_qua || 'N/A';
+      // Tính toán gợi ý cược
+      const goiYCuoc = getKellyBet(do_tin_cay.replace('%', ''));
 
       const newMessage =
-        `<b>PHIÊN : ${phien} | ${xuc1} - ${xuc2} - ${xuc3}</b>\n` +
-        `<b>TỔNG: ${tong} - Kết quả: ${ketQua}</b>\n` +
+        `<b>PHIÊN : ${phien} | ${xuc_xac}</b>\n` +
+        `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
+        `━━━━━━━━━━━━━━━━\n` +
+        `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
+        `<b>Tin Cậy = ${do_tin_cay}</b>\n` +
+        `<b>Nên Cược : ${goiYCuoc}k</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
@@ -72,7 +107,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 0);
+setInterval(getAndSendData, 2000); // Tăng thời gian check lên 2 giây
 
 // --- TỰ ĐỘNG PING CHÍNH MÌNH ---
 setInterval(async () => {
