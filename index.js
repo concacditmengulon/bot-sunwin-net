@@ -3,18 +3,16 @@ const axios = require('axios');
 const express = require('express');
 
 // --- CẤU HÌNH ---
-// Luôn sử dụng biến môi trường cho Token và Chat ID để bảo mật
-// Đọc thêm ở phần giải thích phía dưới
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHAT_ID = process.env.CHAT_ID;
+const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
+const CHAT_ID = '-1002751793100';
 const API_URL = 'https://api-sun-vannhat-demo.onrender.com/api/taixiu/predict';
 const PORT = process.env.PORT || 3000;
-const SELF_URL = 'https://bot-sunwin-net.onrender.com'; // Thay bằng URL của app bạn
+const SELF_URL = 'https://bot-sunwin-net.onrender.com';
 
 // --- TẠO WEB SERVER KEEP-ALIVE ---
 const app = express();
 app.get('/', (req, res) => {
-  res.send('Bot Telegram đang chạy!');
+  res.send('Bot Telegram đang chạy 24/7!');
 });
 app.listen(PORT, () => {
   console.log(`Server keep-alive chạy trên cổng ${PORT}`);
@@ -47,28 +45,19 @@ async function getAndSendData() {
       return;
     }
 
-    const {
-      phien,
-      xuc_xac,
-      tong,
-      ket_qua,
-      phien_sau,
-      du_doan,
-      do_tin_cay,
-      rui_ro
-    } = data;
+    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, do_tin_cay, rui_ro } = data;
 
     if (phien > lastPhienSent) {
       lastPhienSent = phien;
 
       // Xây dựng tin nhắn với định dạng HTML để in đậm
       const newMessage =
-        `<b>PHIÊN: ${phien} | XÚC XẮC: ${xuc_xac}</b>\n` +
-        `<b>TỔNG: ${tong} - KẾT QUẢ: ${ket_qua}</b>\n` +
+        `<b>PHIÊN : ${phien} | ${xuc_xac}</b>\n` +
+        `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
-        `<b>PHIÊN: ${phien_sau} | DỰ ĐOÁN: ${du_doan}</b>\n` +
-        `<b>TIN CẬY: ${do_tin_cay}%</b>\n` +
-        `<b>RỦI RO: ${rui_ro}</b>\n` +
+        `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
+        `<b>Tin Cậy : ${do_tin_cay}</b>\n` +
+        `<b>Rủi Ro : ${rui_ro}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
