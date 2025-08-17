@@ -45,7 +45,7 @@ async function getAndSendData() {
       return;
     }
 
-    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, do_tin_cay, rui_ro } = data;
+    const { phien, xuc_xac, tong, ket_qua, phien_sau, finalPrediction, confidence, risk } = data;
 
     if (phien > lastPhienSent) {
       lastPhienSent = phien;
