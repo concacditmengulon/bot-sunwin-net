@@ -55,9 +55,9 @@ async function getAndSendData() {
         `<b>PHIÊN : ${phien} | ${xuc_xac}</b>\n` +
         `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
-        `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
-        `<b>Tin Cậy : ${do_tin_cay}</b>\n` +
-        `<b>Rủi Ro : ${rui_ro}</b>\n` +
+        `<b>Phiên : ${phien_sau} | ${finalPrediction}</b>\n` +
+        `<b>Tin Cậy : ${confidence}</b>\n` +
+        `<b>Rủi Ro : ${risk}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
