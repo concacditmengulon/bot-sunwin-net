@@ -1,9 +1,10 @@
+// server.js
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
 // --- CẤU HÌNH ---
-const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
+const BOT_TOKEN = '7804059790:AAEFHgjLvJrfSYUA3WPCEqspJUhVHBafXM';
 const CHAT_ID = '-1002732320757';
 const API_URL = 'https://api-sun-vannhat-demo-1.onrender.com/predict';
 const PORT = process.env.PORT || 3000;
@@ -45,18 +46,17 @@ async function getAndSendData() {
       return;
     }
 
-    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, pattern } = data;
+    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan } = data;
 
     if (phien > lastPhienSent) {
       lastPhienSent = phien;
 
-      // Xây dựng tin nhắn với định dạng HTML để in đậm
+      // Xây dựng tin nhắn với định dạng HTML
       const newMessage =
         `<b>PHIÊN : ${phien} | ${xuc_xac}</b>\n` +
         `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
-        `<b>PATTERN : ${pattern}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
