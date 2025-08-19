@@ -69,7 +69,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 2000);
+setInterval(getAndSendData, 0);
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
