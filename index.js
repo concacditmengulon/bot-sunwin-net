@@ -4,7 +4,7 @@ const axios = require('axios');
 const express = require('express');
 
 // --- CẤU HÌNH ---
-const BOT_TOKEN = '7804059790:AAEFHgjLvJrfSYUA3WPCEqspJUhVHBafXM'; // Thay bằng token thật
+const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM'; // Thay bằng token thật
 const CHAT_ID = '-1002751793100'; // ID group/channel
 const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/sunwin';
 const PORT = process.env.PORT || 3000;
