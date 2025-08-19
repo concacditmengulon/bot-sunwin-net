@@ -4,19 +4,18 @@ const axios = require('axios');
 const express = require('express');
 
 // --- CẤU HÌNH ---
-const BOT_TOKEN = '7804059790:AAEFHgjLvJrfSYUA3WPCEqspJUhVHBafXM';
-const CHAT_ID = '-1002751793100';
+const BOT_TOKEN = '7804059790:AAEFHgjLvJrfSYUA3WPCEqspJUhVHBafXM'; // Thay bằng token thật
+const CHAT_ID = '-1002751793100'; // ID group/channel
 const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/sunwin';
 const PORT = process.env.PORT || 3000;
-const SELF_URL = 'https://bot-sunwin-net.onrender.com';
 
-// --- TẠO WEB SERVER KEEP-ALIVE ---
+// --- TẠO WEB SERVER ---
 const app = express();
 app.get('/', (req, res) => {
   res.send('Bot Telegram đang chạy 24/7!');
 });
 app.listen(PORT, () => {
-  console.log(`Server keep-alive chạy trên cổng ${PORT}`);
+  console.log(`Server chạy trên cổng ${PORT}`);
 });
 
 // --- KHỞI TẠO BOT ---
@@ -54,7 +53,7 @@ async function getAndSendData() {
 
       // Xây dựng tin nhắn với định dạng HTML
       const newMessage =
-        `<b>PHIÊN : ${Phien} | ${Xuc_xac_1} - {Xuc_xac_2} - {Xuc_xac_3}</b>\n` +
+        `<b>PHIÊN : ${Phien} | ${Xuc_xac_1} - ${Xuc_xac_2} - ${Xuc_xac_3}</b>\n` +
         `<b>TỔNG: ${Tong} - Kết quả: ${Ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>Phiên : ${PhienSau} | ${du_doan}</b>\n` +
@@ -70,17 +69,7 @@ async function getAndSendData() {
 }
 
 // --- CHẠY LIÊN TỤC ---
-setInterval(getAndSendData, 2000); // Check mỗi 2 giây
-
-// --- TỰ ĐỘNG PING CHÍNH MÌNH ---
-setInterval(async () => {
-  try {
-    await axios.get(SELF_URL);
-    console.log("Ping thành công để giữ app online.");
-  } catch (err) {
-    console.error("Ping thất bại:", err.message);
-  }
-}, 10 * 60 * 1000);
+setInterval(getAndSendData, 2000);
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
