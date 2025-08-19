@@ -4,8 +4,8 @@ const express = require('express');
 
 // --- CẤU HÌNH ---
 const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
-const CHAT_ID = '-1002751793100';
-const API_URL = 'https://api-sun-vannhat-demo.onrender.com/api/taixiu/predict';
+const CHAT_ID = '-1002732320757';
+const API_URL = 'https://api-sun-vannhat-demo-1.onrender.com/predict';
 const PORT = process.env.PORT || 3000;
 const SELF_URL = 'https://bot-sunwin-net.onrender.com';
 
@@ -45,7 +45,7 @@ async function getAndSendData() {
       return;
     }
 
-    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, do_tin_cay, rui_ro } = data;
+    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan, pattern } = data;
 
     if (phien > lastPhienSent) {
       lastPhienSent = phien;
@@ -56,8 +56,7 @@ async function getAndSendData() {
         `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
-        `<b>Tin Cậy : ${do_tin_cay}</b>\n` +
-        `<b>Rủi Ro : ${rui_ro}</b>\n` +
+        `<b>PATTERN : ${pattern}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
