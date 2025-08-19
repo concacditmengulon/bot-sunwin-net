@@ -1,58 +1,38 @@
-// server.js
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const express = require('express');
 
 // --- CẤU HÌNH ---
-const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM'; // Thay bằng token thật
-const CHAT_ID = '-1002751793100'; // ID group/channel
+const BOT_TOKEN = '7804059790:AAEFHgjLvJrBfSYUA3WPCEqspJUhVHBafXM';
+const CHAT_ID = '-1002751793100';
 const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/sunwin';
 const PORT = process.env.PORT || 3000;
 
-// --- TẠO WEB SERVER ---
 const app = express();
-app.get('/', (req, res) => {
-  res.send('Bot Telegram đang chạy 24/7!');
-});
-app.listen(PORT, () => {
-  console.log(`Server chạy trên cổng ${PORT}`);
-});
+app.get('/', (req, res) => res.send('Bot Telegram đang chạy!'));
+app.listen(PORT, () => console.log(`Server chạy trên cổng ${PORT}`));
 
-// --- KHỞI TẠO BOT ---
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// --- BIẾN LƯU TRẠNG THÁI ---
+// --- BIẾN LƯU PHIÊN ---
 let lastPhienSent = 0;
 
-// --- GỬI TIN NHẮN ---
-async function sendMessage(message) {
-  try {
-    await bot.sendMessage(CHAT_ID, message, { parse_mode: 'HTML' });
-    console.log(`Đã gửi tin nhắn cho phiên ${lastPhienSent}`);
-  } catch (error) {
-    console.error('Lỗi khi gửi tin nhắn:', error.response?.body || error.message);
-  }
-}
-
-// --- LẤY VÀ GỬI DỮ LIỆU ---
+// --- HÀM GỬI TIN ---
 async function getAndSendData() {
   try {
-    const response = await axios.get(API_URL, { timeout: 5000 });
-    const data = response.data;
+    const res = await axios.get(API_URL);
+    const data = res.data;
 
-    if (!data || data.Phien === undefined) {
-      console.log('Không nhận được dữ liệu hợp lệ từ API.');
-      return;
-    }
+    if (!data || data.Phien === undefined) return;
 
     const { Phien, Xuc_xac_1, Xuc_xac_2, Xuc_xac_3, Tong, Ket_qua, du_doan } = data;
     const PhienSau = Phien + 1;
 
+    // 🔒 Mỗi phiên chỉ gửi 1 lần
     if (Phien > lastPhienSent) {
       lastPhienSent = Phien;
 
-      // Xây dựng tin nhắn với định dạng HTML
-      const newMessage =
+      const msg =
         `<b>PHIÊN : ${Phien} | ${Xuc_xac_1} - ${Xuc_xac_2} - ${Xuc_xac_3}</b>\n` +
         `<b>TỔNG: ${Tong} - Kết quả: ${Ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
@@ -60,11 +40,13 @@ async function getAndSendData() {
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
-      await sendMessage(newMessage);
+      await bot.sendMessage(CHAT_ID, msg, { parse_mode: "HTML" });
+      console.log(`✅ Đã gửi phiên ${Phien}`);
+    } else {
+      console.log(`⏩ Phiên ${Phien} đã gửi rồi, bỏ qua...`);
     }
-
-  } catch (error) {
-    console.error(`Có lỗi xảy ra:`, error.message);
+  } catch (err) {
+    console.error("Lỗi lấy/gửi dữ liệu:", err.message);
   }
 }
 
@@ -73,7 +55,6 @@ setInterval(getAndSendData, 0);
 
 // --- LỆNH /start ---
 bot.onText(/\/start/, async (msg) => {
-  await bot.sendMessage(msg.chat.id, "Bot đã khởi động và sẽ báo kết quả!");
-  console.log(`Lệnh /start từ chat ID: ${msg.chat.id}`);
+  await bot.sendMessage(msg.chat.id, "✅ Bot đã khởi động và sẽ báo kết quả!");
   getAndSendData();
 });
