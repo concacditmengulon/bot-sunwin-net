@@ -5,8 +5,8 @@ const express = require('express');
 
 // --- CẤU HÌNH ---
 const BOT_TOKEN = '7804059790:AAEFHgjLvJrfSYUA3WPCEqspJUhVHBafXM';
-const CHAT_ID = '-1002732320757';
-const API_URL = 'https://api-sun-vannhat-demo-1.onrender.com/predict';
+const CHAT_ID = '-1002751793100';
+const API_URL = 'https://fullsrc-daynesun.onrender.com/api/taixiu/sunwin';
 const PORT = process.env.PORT || 3000;
 const SELF_URL = 'https://bot-sunwin-net.onrender.com';
 
@@ -41,22 +41,23 @@ async function getAndSendData() {
     const response = await axios.get(API_URL, { timeout: 5000 });
     const data = response.data;
 
-    if (!data || data.phien === undefined) {
+    if (!data || data.Phien === undefined) {
       console.log('Không nhận được dữ liệu hợp lệ từ API.');
       return;
     }
 
-    const { phien, xuc_xac, tong, ket_qua, phien_sau, du_doan } = data;
+    const { Phien, Xuc_xac_1, Xuc_xac_2, Xuc_xac_3, Tong, Ket_qua, du_doan } = data;
+    const PhienSau = Phien + 1;
 
-    if (phien > lastPhienSent) {
-      lastPhienSent = phien;
+    if (Phien > lastPhienSent) {
+      lastPhienSent = Phien;
 
       // Xây dựng tin nhắn với định dạng HTML
       const newMessage =
-        `<b>PHIÊN : ${phien} | ${xuc_xac}</b>\n` +
-        `<b>TỔNG: ${tong} - Kết quả: ${ket_qua}</b>\n` +
+        `<b>PHIÊN : ${Phien} | ${Xuc_xac_1} - {Xuc_xac_2} - {Xuc_xac_3}</b>\n` +
+        `<b>TỔNG: ${Tong} - Kết quả: ${Ket_qua}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
-        `<b>Phiên : ${phien_sau} | ${du_doan}</b>\n` +
+        `<b>Phiên : ${PhienSau} | ${du_doan}</b>\n` +
         `━━━━━━━━━━━━━━━━\n` +
         `<b>💎 BOT RẮN - VANNHAT 💎</b>`;
 
